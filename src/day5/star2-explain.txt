@@ -1,0 +1,65 @@
+Let me explain `star2` in detail. It builds on the logic from `star1` but handles cases that are out of order and need to be sorted.
+
+Here's the core logic of `star2`:
+
+1. First, it looks for sequences that are NOT properly ordered (i.e., `not is_ordered(rules, case)`)
+2. When it finds such a sequence, it sorts it according to the ordering rules
+3. After sorting, it takes the middle element and adds it to the total
+
+The interesting part is the custom sorting logic:
+
+```python
+def custom_sort_key(x: int, case: List[int], rules: Dict[int, List[int]]) -> Tuple[int, int]:
+    # Count how many elements should come after x
+    comes_before = sum(1 for y in case if x in rules and y in rules[x])
+    # Count how many elements should come before x
+    comes_after = sum(1 for y in case if y in rules and x in rules[y])
+    return (comes_after, x)  # Sort first by position constraints, then by value
+```
+
+Let's break this down with an example:
+
+```python
+# Sample rules:
+rules = {
+    1: [2],    # 1 should come before 2
+    2: [3],    # 2 should come before 3
+    4: [5]     # 4 should come before 5
+}
+
+# Disordered sequence:
+case = [5, 4, 3, 2, 1]
+```
+
+For each number in the sequence, the sorting key calculates:
+1. `comes_before`: How many numbers in the sequence should come after this number
+2. `comes_after`: How many numbers in the sequence should come before this number
+
+For example, for number 2:
+- `comes_before`: 1 (number 3 should come after 2)
+- `comes_after`: 1 (number 1 should come before 2)
+
+The sorting puts elements with:
+- More "comes_after" later in the sequence
+- Same "comes_after" are ordered by their actual value
+
+So for our example:
+```python
+Number | comes_after | Value
+1      | 0          | 1     # Nothing should come before 1
+2      | 1          | 2     # 1 should come before it
+3      | 2          | 3     # 1,2 should come before it
+4      | 0          | 4     # Independent of 1,2,3
+5      | 1          | 5     # 4 should come before it
+```
+
+After sorting, we get: `[1, 2, 3, 4, 5]`
+
+The key insights are:
+1. It only processes sequences that fail `is_ordered`
+2. The sorting considers both direct and transitive dependencies
+3. The middle element is important because it represents the "pivot" point in the sequence
+
+This is particularly useful when you have sequences that violate the ordering rules and need to be "fixed" in the most efficient way possible while maintaining as many of the original ordering constraints as possible.
+
+Would you like me to elaborate on any part or provide more examples of how the sorting works?
