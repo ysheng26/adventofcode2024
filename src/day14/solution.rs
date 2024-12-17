@@ -119,7 +119,11 @@ pub fn part2() {
         }
     }
     let mut res = 0;
-    while !is_christmas_tree(&robots) {
+    // it was the 2nd answer
+    loop {
+        if is_christmas_tree(&robots) {
+            println!("{res}");
+        }
         res += 1;
         for robot in &mut robots {
             robot.step(1);
