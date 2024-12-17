@@ -3,8 +3,8 @@ use std::fs;
 use itertools::Itertools;
 use regex::Regex;
 
-const INPUT: &str = "src/day13/input.txt";
-// const INPUT: &str = "src/day13/input-small.txt";
+// const INPUT: &str = "src/day13/input.txt";
+const INPUT: &str = "src/day13/input-small.txt";
 
 #[derive(Debug, Default)]
 struct Question {
@@ -100,6 +100,7 @@ impl From<String> for Question {
     }
 }
 
+#[allow(unused)]
 pub fn part1() {
     let input = fs::read_to_string(INPUT).unwrap();
     let chunks = input.lines().chunks(4);
@@ -130,6 +131,7 @@ pub fn part1() {
     println!("day13 part1 solution: {res}");
 }
 
+#[allow(unused)]
 pub fn part2() {
     let input = fs::read_to_string(INPUT).unwrap();
     let chunks = input.lines().chunks(4);
