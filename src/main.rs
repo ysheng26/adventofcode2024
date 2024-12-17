@@ -30,10 +30,10 @@ fn main() {
     // day5::solution::part2();
 
     // day6::solution::part1();
-    // // day6::solution::part2();
+    // day6::solution::part2();
 
     // day7::solution::part1();
-    // // day7::solution::part2();
+    // day7::solution::part2();
 
     // day8::solution::part1();
     // day8::solution::part2();
@@ -53,5 +53,6 @@ fn main() {
     // day13::solution::part1();
     // day13::solution::part2();
 
-    day14::solution::part1();
+    // day14::solution::part1();
+    day14::solution::part2();
 }

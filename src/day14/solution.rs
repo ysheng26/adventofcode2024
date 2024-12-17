@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::HashSet, fs};
 
 use regex::Regex;
 
@@ -96,4 +96,34 @@ pub fn part1() {
     println!("{:?}", counts);
     let res: i64 = counts.iter().fold(1, |acc, x| acc * x);
     println!("day14 part1 solution: {res}");
+}
+
+fn is_christmas_tree(robots: &[Robot]) -> bool {
+    //
+    let hashset: HashSet<(i32, i32)> = robots.iter().map(|robot| robot.position).collect();
+    hashset.len() == robots.len()
+}
+
+#[allow(unused)]
+pub fn part2() {
+    let mut robots = Vec::<Robot>::new();
+
+    let re = Regex::new(r"=(-?\d+),(-?\d+).*=(-?\d+),(-?\d+)").unwrap();
+    for line in fs::read_to_string(INPUT).unwrap().lines() {
+        for (_, [pos_x, pos_y, speed_x, speed_y]) in re.captures_iter(&line).map(|c| c.extract()) {
+            let pos_x = pos_x.parse::<i32>().unwrap();
+            let pos_y = pos_y.parse::<i32>().unwrap();
+            let speed_x = speed_x.parse::<i32>().unwrap();
+            let speed_y = speed_y.parse::<i32>().unwrap();
+            robots.push(Robot::new(pos_x, pos_y, speed_x, speed_y));
+        }
+    }
+    let mut res = 0;
+    while !is_christmas_tree(&robots) {
+        res += 1;
+        for robot in &mut robots {
+            robot.step(1);
+        }
+    }
+    println!("day14 part2 solution: {res}");
 }

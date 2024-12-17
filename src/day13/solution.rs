@@ -31,17 +31,6 @@ fn is_zero(a: f64) -> bool {
 }
 
 impl Question {
-    fn new(ax: f64, ay: f64, bx: f64, by: f64, x: f64, y: f64) -> Self {
-        Question {
-            ax,
-            ay,
-            bx,
-            by,
-            x,
-            y,
-        }
-    }
-
     fn solve(&self) -> Option<f64> {
         let denom = self.bx * self.ay - self.by * self.ax;
         if is_zero(denom) {
