@@ -1,8 +1,8 @@
 use std::fs;
 
-// const INPUT: &str = "src/day15/input-small.txt";
 // const INPUT: &str = "src/day15/input-medium.txt";
 const INPUT: &str = "src/day15/input.txt";
+// const INPUT: &str = "src/day15/input-small.txt";
 
 // 100 * i + j
 
@@ -54,7 +54,46 @@ const BOX: char = 'O';
 const BOT: char = '@';
 const SPACE: char = '.';
 
+const BIGBOX_LEFT: char = '[';
+const BIGBOX_RIGHT: char = ']';
+
 impl Grid {
+    fn new2(input: &str) -> Self {
+        let grid: Vec<Vec<char>> = input
+            .lines()
+            .map(|line| {
+                line.chars()
+                    .flat_map(|ch| match ch {
+                        WALL => "##".chars(),
+                        BOX => "[]".chars(),
+                        BOT => "@.".chars(),
+                        SPACE => "..".chars(),
+                        _ => "  ".chars(),
+                    })
+                    .collect()
+            })
+            .collect();
+        let m = grid.len();
+        let n = grid[0].len();
+
+        let mut robot_pos = (0, 0);
+        for i in 0..m {
+            for j in 0..n {
+                if grid[i][j] == BOT {
+                    robot_pos = (i, j);
+                    break;
+                }
+            }
+        }
+
+        Self {
+            grid,
+            m,
+            n,
+            robot_pos,
+        }
+    }
+
     fn new(input: &str) -> Self {
         let grid: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
         let m = grid.len();
@@ -116,6 +155,7 @@ impl Grid {
         }
         self.robot_pos.1 += 1;
     }
+
     fn move_robot_up(&mut self) {
         let mut i = self.robot_pos.0;
         let j = self.robot_pos.1;
@@ -133,6 +173,94 @@ impl Grid {
         }
         self.robot_pos.0 -= 1;
     }
+
+    fn can_move_robot_up2(&mut self, pos: Pos) -> bool {
+        let x = pos.0;
+        let y = pos.1;
+        let curr_ch = self.grid[x][y];
+        if curr_ch == WALL {
+            return false;
+        }
+
+        if curr_ch == SPACE {
+            return true;
+        }
+
+        if curr_ch == BOT {
+            if self.can_move_robot_up2((x - 1, y)) {
+                return true;
+            }
+        }
+
+        if curr_ch == BIGBOX_LEFT {
+            let a = self.can_move_robot_up2((x - 1, y));
+            let b = self.can_move_robot_up2((x - 1, y + 1));
+            return a && b;
+        }
+
+        if curr_ch == BIGBOX_RIGHT {
+            //
+            let a = self.can_move_robot_up2((x - 1, y));
+            let b = self.can_move_robot_up2((x - 1, y - 1));
+            return a && b;
+        }
+
+        false
+    }
+
+    fn move_robot_up2(&mut self, pos: Pos) -> bool {
+        let x = pos.0;
+        let y = pos.1;
+        let curr_ch = self.grid[x][y];
+        if curr_ch == WALL {
+            return false;
+        }
+
+        if curr_ch == SPACE {
+            return true;
+        }
+
+        if curr_ch == BOT {
+            if self.can_move_robot_up2((x - 1, y)) {
+                self.move_robot_up2((x - 1, y));
+                self.grid[x][y] = SPACE;
+                self.grid[x - 1][y] = BOT;
+                self.robot_pos = (x - 1, y);
+            }
+        }
+
+        if curr_ch == BIGBOX_LEFT {
+            let a = self.can_move_robot_up2((x - 1, y));
+            let b = self.can_move_robot_up2((x - 1, y + 1));
+            if a && b {
+                self.move_robot_up2((x - 1, y));
+                self.move_robot_up2((x - 1, y + 1));
+                self.grid[x][y] = SPACE;
+                self.grid[x][y + 1] = SPACE;
+                self.grid[x - 1][y] = BIGBOX_LEFT;
+                self.grid[x - 1][y + 1] = BIGBOX_RIGHT;
+                return true;
+            }
+        }
+
+        if curr_ch == BIGBOX_RIGHT {
+            //
+            let a = self.can_move_robot_up2((x - 1, y));
+            let b = self.can_move_robot_up2((x - 1, y - 1));
+            if a && b {
+                self.move_robot_up2((x - 1, y));
+                self.move_robot_up2((x - 1, y - 1));
+                self.grid[x][y] = SPACE;
+                self.grid[x][y - 1] = SPACE;
+                self.grid[x - 1][y] = BIGBOX_RIGHT;
+                self.grid[x - 1][y - 1] = BIGBOX_LEFT;
+                return true;
+            }
+        }
+
+        false
+    }
+
     fn move_robot_down(&mut self) {
         //
         let mut i = self.robot_pos.0;
@@ -151,6 +279,94 @@ impl Grid {
         }
         self.robot_pos.0 += 1;
     }
+
+    fn can_move_robot_down2(&mut self, pos: Pos) -> bool {
+        let x = pos.0;
+        let y = pos.1;
+        let curr_ch = self.grid[x][y];
+        if curr_ch == WALL {
+            return false;
+        }
+
+        if curr_ch == SPACE {
+            return true;
+        }
+
+        if curr_ch == BOT {
+            if self.can_move_robot_down2((x + 1, y)) {
+                return true;
+            }
+        }
+
+        if curr_ch == BIGBOX_LEFT {
+            let a = self.can_move_robot_down2((x + 1, y));
+            let b = self.can_move_robot_down2((x + 1, y + 1));
+            return a && b;
+        }
+
+        if curr_ch == BIGBOX_RIGHT {
+            //
+            let a = self.can_move_robot_down2((x + 1, y));
+            let b = self.can_move_robot_down2((x + 1, y - 1));
+            return a && b;
+        }
+
+        false
+    }
+
+    fn move_robot_down2(&mut self, pos: Pos) -> bool {
+        let x = pos.0;
+        let y = pos.1;
+        let curr_ch = self.grid[x][y];
+        if curr_ch == WALL {
+            return false;
+        }
+
+        if curr_ch == SPACE {
+            return true;
+        }
+
+        if curr_ch == BOT {
+            if self.can_move_robot_down2((x + 1, y)) {
+                self.move_robot_down2((x + 1, y));
+                self.grid[x][y] = SPACE;
+                self.grid[x + 1][y] = BOT;
+                self.robot_pos = (x + 1, y);
+            }
+        }
+
+        if curr_ch == BIGBOX_LEFT {
+            let a = self.can_move_robot_down2((x + 1, y));
+            let b = self.can_move_robot_down2((x + 1, y + 1));
+            if a && b {
+                self.move_robot_down2((x + 1, y));
+                self.move_robot_down2((x + 1, y + 1));
+                self.grid[x][y] = SPACE;
+                self.grid[x][y + 1] = SPACE;
+                self.grid[x + 1][y] = BIGBOX_LEFT;
+                self.grid[x + 1][y + 1] = BIGBOX_RIGHT;
+                return true;
+            }
+        }
+
+        if curr_ch == BIGBOX_RIGHT {
+            //
+            let a = self.can_move_robot_down2((x + 1, y));
+            let b = self.can_move_robot_down2((x + 1, y - 1));
+            if a && b {
+                self.move_robot_down2((x + 1, y));
+                self.move_robot_down2((x + 1, y - 1));
+                self.grid[x][y] = SPACE;
+                self.grid[x][y - 1] = SPACE;
+                self.grid[x + 1][y] = BIGBOX_RIGHT;
+                self.grid[x + 1][y - 1] = BIGBOX_LEFT;
+                return true;
+            }
+        }
+
+        false
+    }
+
     fn move_robot_left(&mut self) {
         //
         let i = self.robot_pos.0;
@@ -170,6 +386,66 @@ impl Grid {
         self.robot_pos.1 -= 1;
     }
 
+    fn move_robot_left2(&mut self, pos: Pos) -> bool {
+        // need to do this recursively
+        // base case is when there is space move
+        // or when there is a wall then don't move
+
+        /*
+        left
+         012345678
+        0
+        1
+        2##[]@
+        3##.[][]@
+
+        move_left((2,7))
+            if ch == '#' return false
+            if ch == '.' return true
+            if move_left((2,6))
+                copy curr char one left
+        */
+        let x = pos.0;
+        let y = pos.1;
+        let curr_ch = self.grid[x][y];
+        if curr_ch == WALL {
+            return false;
+        }
+
+        if curr_ch == SPACE {
+            return true;
+        }
+
+        if self.move_robot_left2((x, y - 1)) {
+            //
+            self.grid[x][y] = SPACE;
+            self.grid[x][y - 1] = curr_ch;
+            return true;
+        }
+        false
+    }
+
+    fn move_robot_right2(&mut self, pos: Pos) -> bool {
+        let x = pos.0;
+        let y = pos.1;
+        let curr_ch = self.grid[x][y];
+        if curr_ch == WALL {
+            return false;
+        }
+
+        if curr_ch == SPACE {
+            return true;
+        }
+
+        if self.move_robot_right2((x, y + 1)) {
+            //
+            self.grid[x][y] = SPACE;
+            self.grid[x][y + 1] = curr_ch;
+            return true;
+        }
+        false
+    }
+
     fn apply_instruction(&mut self, instruction: char) {
         //
         match instruction.try_into().unwrap() {
@@ -177,6 +453,34 @@ impl Grid {
             Dir::Left => self.move_robot_left(),
             Dir::Down => self.move_robot_down(),
             Dir::Right => self.move_robot_right(),
+        }
+        // print_grid(&self);
+    }
+
+    fn apply_instruction2(&mut self, instruction: char) {
+        //
+        match instruction.try_into().unwrap() {
+            // Dir::Up => self.move_robot_up2(),
+            Dir::Left => {
+                if self.move_robot_left2(self.robot_pos) {
+                    self.robot_pos.1 -= 1;
+                }
+            }
+            Dir::Down => {
+                if self.move_robot_down2(self.robot_pos) {
+                    self.robot_pos.0 += 1;
+                }
+            }
+            Dir::Right => {
+                if self.move_robot_right2(self.robot_pos) {
+                    self.robot_pos.1 += 1;
+                }
+            }
+            Dir::Up => {
+                if self.move_robot_up2(self.robot_pos) {
+                    self.robot_pos.0 -= 1;
+                }
+            }
         }
         // print_grid(&self);
     }
@@ -197,13 +501,32 @@ impl Grid {
 
         res
     }
-}
 
+    fn calc_gps2(&self) -> usize {
+        //
+        let mut res = 0;
+
+        for i in 0..self.m {
+            for j in 0..self.n {
+                if self.grid[i][j] != BIGBOX_LEFT {
+                    continue;
+                }
+
+                res += 100 * i + j;
+            }
+        }
+
+        res
+    }
+}
 fn print_grid(grid: &Grid) {
-    println!("robot_pos = {:?}", grid.robot_pos);
+    // println!("robot_pos = {:?}", grid.robot_pos);
 
     for row in &grid.grid {
-        println!("{:?}", row);
+        for ch in row {
+            print!("{ch}");
+        }
+        println!("");
     }
 }
 
@@ -227,4 +550,35 @@ pub fn part1() {
 
     let res = grid.calc_gps();
     println!("day15 part1 solution: {res}");
+}
+
+#[allow(unused)]
+pub fn part2() {
+    //
+    let input: String = fs::read_to_string(INPUT).expect("can not read input file");
+    let mut input_iter = input.split("\n\n");
+    let grid_input = input_iter.next().unwrap();
+    let instructions_input = input_iter.next().unwrap();
+
+    let mut grid = Grid::new2(&grid_input);
+    let instructions: Vec<char> = instructions_input
+        .chars()
+        .into_iter()
+        .filter(|&ch| ch == '^' || ch == '<' || ch == '>' || ch == 'v')
+        .collect();
+    // print_grid(&grid);
+    // let mut s = String::new();
+    for (i, &instruction) in instructions.iter().enumerate() {
+        // println!("going to move: {instruction} {}/{}", i, instructions.len());
+        // stdin()
+        //     .read_line(&mut s)
+        //     .expect("Did not enter a correct string");
+
+        grid.apply_instruction2(instruction);
+        // print_grid(&grid);
+    }
+    // print_grid(&grid);
+
+    let res = grid.calc_gps2();
+    println!("day15 part2 solution: {res}");
 }

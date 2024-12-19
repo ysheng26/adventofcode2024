@@ -57,5 +57,6 @@ fn main() {
     // day14::solution::part1();
     // day14::solution::part2();
 
-    day15::solution::part1();
+    // day15::solution::part1();
+    day15::solution::part2();
 }
